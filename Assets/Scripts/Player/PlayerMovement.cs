@@ -21,6 +21,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private int maxBlockHits = 3;
     [SerializeField] private float blockResetCooldown = 2.0f;
 
+    [Header("VFX")]
+    [SerializeField] private GameObject hitEnemyVFX;  // VFX for hitting enemy
+    [SerializeField] private GameObject blockImpactVFX; // VFX for blocking attack
+
+    [SerializeField] private ScreenShake screenShake; // Reference to the ScreenShake script
+    
     private Rigidbody2D rb;
     private Animator animator;
     private SpriteRenderer spriteRenderer;
@@ -216,6 +222,18 @@ public class PlayerController : MonoBehaviour
             if (enemy != null)
             {
                 enemy.TakeDamage(1);
+
+                // Spawn hitEnemyVFX at enemy's position
+                if (hitEnemyVFX != null)
+                {
+                    Instantiate(hitEnemyVFX, other.transform.position + new Vector3(0, 2, 0), Quaternion.identity);
+                }
+
+                // Trigger screen shake for hitting an enemy
+                if (screenShake != null)
+                {
+                    screenShake.Shake(0.2f, 0.3f);
+                }
             }
         }
     }
@@ -228,6 +246,17 @@ public class PlayerController : MonoBehaviour
         {
             currentBlockHits--;
             Debug.Log("Attack blocked! Remaining blocks: " + currentBlockHits);
+
+            if (blockImpactVFX != null)
+            {
+                Instantiate(blockImpactVFX, transform.position + new Vector3(0, 2f, 0), Quaternion.identity);
+            }
+
+            // Trigger screen shake for blocking
+            if (screenShake != null)
+            {
+                screenShake.Shake(0.15f, 0.2f);
+            }
 
             if (blockResetCoroutine != null)
                 StopCoroutine(blockResetCoroutine);
@@ -260,6 +289,12 @@ public class PlayerController : MonoBehaviour
         flashCoroutine = StartCoroutine(FlashRed());
 
         Debug.Log("Player took " + amount + " damage! Health: " + currentHealth);
+
+        // Trigger screen shake for taking damage
+        if (screenShake != null)
+        {
+            screenShake.Shake(0.25f, 0.4f);
+        }
 
         if (currentHealth <= 0)
         {

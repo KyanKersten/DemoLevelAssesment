@@ -418,6 +418,8 @@ MonoBehaviour:
   blockResetCooldown: 2
   minBlockDuration: 1.5
   player: {fileID: 745135831}
+  hitImpactVFX: {fileID: 4021103657954561961, guid: 5c755f9bc5253ea418e919994537dcc7, type: 3}
+  blockImpactVFX: {fileID: 2708598583397607911, guid: 6398d43fe79ea0140913dc5530c646af, type: 3}
 --- !u!95 &192023490
 Animator:
   serializedVersion: 7
@@ -2154,6 +2156,9 @@ MonoBehaviour:
   blockNegatesDamage: 1
   maxBlockHits: 3
   blockResetCooldown: 2
+  hitEnemyVFX: {fileID: 4021103657954561961, guid: 5c755f9bc5253ea418e919994537dcc7, type: 3}
+  blockImpactVFX: {fileID: 2708598583397607911, guid: 6398d43fe79ea0140913dc5530c646af, type: 3}
+  screenShake: {fileID: 0}
 --- !u!95 &745135833
 Animator:
   serializedVersion: 7

@@ -13,7 +13,7 @@ public class EnemyController : MonoBehaviour
     [Header("Combat")]
     [SerializeField] float attackRange = 1.5f;
     [SerializeField] float rollCooldown = 2f;
-    [SerializeField] float attackCooldown = 0.7f; 
+    [SerializeField] float attackCooldown = 0.7f;
     [SerializeField] Collider2D attackHitbox;
     [SerializeField] float attackHitboxActiveTime = 0.2f;
     [SerializeField] SpriteRenderer hitboxVisual;
@@ -27,10 +27,14 @@ public class EnemyController : MonoBehaviour
     [SerializeField] bool blockNegatesDamage = true;
     [SerializeField] int maxBlockHits = 3;
     [SerializeField] float blockResetCooldown = 2f;
-    [SerializeField] float minBlockDuration = 1.5f;  // NEW: Minimum time enemy blocks visibly
+    [SerializeField] float minBlockDuration = 1.5f;
 
     [Header("References")]
     [SerializeField] Transform player;
+
+    [Header("Impact VFX")]
+    [SerializeField] private GameObject hitImpactVFX;
+    [SerializeField] private GameObject blockImpactVFX;
 
     private Rigidbody2D rb;
     private Animator animator;
@@ -50,7 +54,7 @@ public class EnemyController : MonoBehaviour
     private int currentBlockHits;
     private Coroutine blockResetCoroutine;
     private bool isStunned = false;
-    private Coroutine blockDurationCoroutine;  // NEW: track blocking duration coroutine
+    private Coroutine blockDurationCoroutine;
 
     void Start()
     {
@@ -96,15 +100,13 @@ public class EnemyController : MonoBehaviour
 
         if (!rolling)
         {
-            // If blocking, hold position and animation, no attacking or rolling
             if (isBlocking)
             {
                 rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
-                animator.SetInteger("AnimState", 0); // Idle animation while blocking
-                return; // Skip rest of update to stay blocking
+                animator.SetInteger("AnimState", 0);
+                return;
             }
 
-            // Randomly enter block state when close to player
             if (!isBlocking && Random.value > 0.98f && distance < attackRange * 1.5f)
                 StartBlocking();
 
@@ -159,7 +161,6 @@ public class EnemyController : MonoBehaviour
         if (blockHitboxVisual != null)
             blockHitboxVisual.enabled = true;
 
-        // Start blocking minimum duration coroutine
         if (blockDurationCoroutine != null)
             StopCoroutine(blockDurationCoroutine);
         blockDurationCoroutine = StartCoroutine(BlockForMinimumTime(minBlockDuration));
@@ -175,7 +176,6 @@ public class EnemyController : MonoBehaviour
         if (blockHitboxVisual != null)
             blockHitboxVisual.enabled = false;
 
-        // Cancel block duration coroutine if still running
         if (blockDurationCoroutine != null)
         {
             StopCoroutine(blockDurationCoroutine);
@@ -236,6 +236,9 @@ public class EnemyController : MonoBehaviour
             {
                 player.TakeDamage(attackDamage);
                 Debug.Log("Enemy attacked player for " + attackDamage + " damage.");
+
+                if (hitImpactVFX != null)
+                    Instantiate(blockImpactVFX, transform.position + new Vector3(0, 2f, 0), Quaternion.identity);
             }
         }
     }
@@ -248,6 +251,9 @@ public class EnemyController : MonoBehaviour
         {
             currentBlockHits--;
             Debug.Log("Enemy blocked damage. Remaining blocks: " + currentBlockHits);
+
+            if (blockImpactVFX != null)
+                Instantiate(blockImpactVFX, transform.position + new Vector3(0, 2f, 0), Quaternion.identity);
 
             if (currentBlockHits > 0)
             {
