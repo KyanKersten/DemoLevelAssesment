@@ -11,8 +11,15 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float attackHitboxActiveTime = 0.2f;
     [SerializeField] SpriteRenderer hitboxVisual;
     [SerializeField] int maxHealth = 5;
-    [SerializeField] private GameObject[] hearts; 
+    [SerializeField] private GameObject[] hearts;
     [SerializeField] private Sprite grayedOutHeartSprite;
+
+    [Header("Blocking")]
+    [SerializeField] private Collider2D blockHitbox;
+    [SerializeField] private SpriteRenderer blockHitboxVisual;
+    [SerializeField] private bool blockNegatesDamage = true;
+    [SerializeField] private int maxBlockHits = 3;
+    [SerializeField] private float blockResetCooldown = 2.0f;
 
     private Rigidbody2D rb;
     private Animator animator;
@@ -33,6 +40,10 @@ public class PlayerController : MonoBehaviour
     private int currentHealth;
     private Coroutine flashCoroutine;
     private bool isDead = false;
+    private bool isBlocking = false;
+    private int currentBlockHits;
+    private Coroutine blockResetCoroutine;
+    private bool isStunned = false;
 
     void Start()
     {
@@ -43,15 +54,23 @@ public class PlayerController : MonoBehaviour
             attackHitbox.enabled = false;
         hitboxOriginalLocalX = attackHitbox.transform.localPosition.x;
         currentHealth = maxHealth;
+        currentBlockHits = maxBlockHits;
+
+        if (blockHitbox != null)
+            blockHitbox.enabled = false;
+        if (blockHitboxVisual != null)
+            blockHitboxVisual.enabled = false;
     }
 
     void Update()
     {
-        if (isDead) return;
+        if (isDead || isStunned) return;
 
         timeSinceAttack += Time.deltaTime;
+
         if (rolling)
             rollCurrentTime += Time.deltaTime;
+
         if (rollCurrentTime > rollDuration)
         {
             rolling = false;
@@ -76,7 +95,7 @@ public class PlayerController : MonoBehaviour
             );
         }
 
-        if (Input.GetMouseButtonDown(0) && timeSinceAttack > 0.25f && !rolling)
+        if (Input.GetMouseButtonDown(0) && timeSinceAttack > 0.25f && !rolling && !isBlocking)
         {
             currentAttack++;
             if (currentAttack > 3)
@@ -90,14 +109,27 @@ public class PlayerController : MonoBehaviour
                 StartCoroutine(EnableHitboxTemporarily());
         }
 
-        if (Input.GetMouseButtonDown(1) && !rolling)
+        if (Input.GetMouseButtonDown(1) && !rolling && currentBlockHits > 0)
         {
             animator.SetTrigger("Block");
             animator.SetBool("IdleBlock", true);
+            isBlocking = true;
+
+            if (blockHitbox != null)
+                blockHitbox.enabled = true;
+            if (blockHitboxVisual != null)
+                blockHitboxVisual.enabled = true;
         }
+
         if (Input.GetMouseButtonUp(1))
         {
             animator.SetBool("IdleBlock", false);
+            isBlocking = false;
+
+            if (blockHitbox != null)
+                blockHitbox.enabled = false;
+            if (blockHitboxVisual != null)
+                blockHitboxVisual.enabled = false;
         }
 
         if (Input.GetKeyDown(KeyCode.LeftShift) && !rolling)
@@ -127,7 +159,7 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (isDead) return;
+        if (isDead || isStunned) return;
 
         if (!rolling)
             rb.linearVelocity = new Vector2(inputX * moveSpeed, rb.linearVelocity.y);
@@ -191,16 +223,64 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage(int amount)
     {
         if (isInvincible || isDead) return;
+
+        if (isBlocking && blockNegatesDamage && currentBlockHits > 0)
+        {
+            currentBlockHits--;
+            Debug.Log("Attack blocked! Remaining blocks: " + currentBlockHits);
+
+            if (blockResetCoroutine != null)
+                StopCoroutine(blockResetCoroutine);
+            blockResetCoroutine = StartCoroutine(ResetBlockHitsAfterDelay());
+
+            if (currentBlockHits <= 0)
+            {
+                Debug.Log("Shield broken!");
+                isBlocking = false;
+                animator.SetBool("IdleBlock", false);
+
+                if (blockHitbox != null)
+                    blockHitbox.enabled = false;
+                if (blockHitboxVisual != null)
+                    blockHitboxVisual.enabled = false;
+
+                StartCoroutine(Stun(1.0f));
+            }
+
+            return;
+        }
+
         currentHealth -= amount;
         UpdateHearts();
+
+        animator.SetTrigger("Hurt");
+
         if (flashCoroutine != null)
             StopCoroutine(flashCoroutine);
         flashCoroutine = StartCoroutine(FlashRed());
+
         Debug.Log("Player took " + amount + " damage! Health: " + currentHealth);
+
         if (currentHealth <= 0)
         {
             Die();
         }
+    }
+
+    IEnumerator ResetBlockHitsAfterDelay()
+    {
+        yield return new WaitForSeconds(blockResetCooldown);
+        currentBlockHits = maxBlockHits;
+        Debug.Log("Shield recovered!");
+    }
+
+    IEnumerator Stun(float duration)
+    {
+        isStunned = true;
+        animator.SetTrigger("Hurt");
+        rb.linearVelocity = Vector2.zero;
+        yield return new WaitForSeconds(duration);
+        isStunned = false;
     }
 
     IEnumerator FlashRed()
@@ -224,7 +304,7 @@ public class PlayerController : MonoBehaviour
         spriteRenderer.color = Color.white;
         animator.SetTrigger("Death");
         rb.linearVelocity = Vector2.zero;
-        rb.isKinematic = true; 
+        rb.isKinematic = true;
         Debug.Log("Player died!");
     }
 
@@ -240,7 +320,7 @@ public class PlayerController : MonoBehaviour
     {
         for (int i = 0; i < hearts.Length; i++)
         {
-            hearts[i].SetActive(i < currentHealth); 
+            hearts[i].SetActive(i < currentHealth);
         }
     }
 }
