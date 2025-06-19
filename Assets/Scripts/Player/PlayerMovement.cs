@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using FirstGearGames.SmoothCameraShaker;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(SpriteRenderer))]
 public class PlayerController : MonoBehaviour
@@ -24,8 +25,7 @@ public class PlayerController : MonoBehaviour
     [Header("VFX")]
     [SerializeField] private GameObject hitEnemyVFX;  // VFX for hitting enemy
     [SerializeField] private GameObject blockImpactVFX; // VFX for blocking attack
-
-    [SerializeField] private ScreenShake screenShake; // Reference to the ScreenShake script
+    public ShakeData shakeData; // Shake data for camera shake effect
     
     private Rigidbody2D rb;
     private Animator animator;
@@ -229,11 +229,8 @@ public class PlayerController : MonoBehaviour
                     Instantiate(hitEnemyVFX, other.transform.position + new Vector3(0, 2, 0), Quaternion.identity);
                 }
 
-                // Trigger screen shake for hitting an enemy
-                if (screenShake != null)
-                {
-                    screenShake.Shake(0.2f, 0.3f);
-                }
+                // Trigger camera shake for attacking
+                CameraShakerHandler.Shake(shakeData);
             }
         }
     }
@@ -252,11 +249,8 @@ public class PlayerController : MonoBehaviour
                 Instantiate(blockImpactVFX, transform.position + new Vector3(0, 2f, 0), Quaternion.identity);
             }
 
-            // Trigger screen shake for blocking
-            if (screenShake != null)
-            {
-                screenShake.Shake(0.15f, 0.2f);
-            }
+            // Trigger camera shake for blocking
+            CameraShakerHandler.Shake(shakeData);
 
             if (blockResetCoroutine != null)
                 StopCoroutine(blockResetCoroutine);
@@ -290,11 +284,8 @@ public class PlayerController : MonoBehaviour
 
         Debug.Log("Player took " + amount + " damage! Health: " + currentHealth);
 
-        // Trigger screen shake for taking damage
-        if (screenShake != null)
-        {
-            screenShake.Shake(0.25f, 0.4f);
-        }
+        // Trigger camera shake for taking damage
+        CameraShakerHandler.Shake(shakeData);
 
         if (currentHealth <= 0)
         {
