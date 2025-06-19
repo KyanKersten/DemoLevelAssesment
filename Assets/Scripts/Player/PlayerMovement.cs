@@ -11,6 +11,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float attackHitboxActiveTime = 0.2f;
     [SerializeField] SpriteRenderer hitboxVisual;
     [SerializeField] int maxHealth = 5;
+    [SerializeField] private GameObject[] hearts; 
+    [SerializeField] private Sprite grayedOutHeartSprite;
 
     private Rigidbody2D rb;
     private Animator animator;
@@ -190,6 +192,7 @@ public class PlayerController : MonoBehaviour
     {
         if (isInvincible || isDead) return;
         currentHealth -= amount;
+        UpdateHearts();
         if (flashCoroutine != null)
             StopCoroutine(flashCoroutine);
         flashCoroutine = StartCoroutine(FlashRed());
@@ -231,5 +234,13 @@ public class PlayerController : MonoBehaviour
         Vector3 scale = transform.localScale;
         scale.x *= -1;
         transform.localScale = scale;
+    }
+
+    public void UpdateHearts()
+    {
+        for (int i = 0; i < hearts.Length; i++)
+        {
+            hearts[i].SetActive(i < currentHealth); 
+        }
     }
 }

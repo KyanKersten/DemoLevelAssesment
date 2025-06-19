@@ -16,7 +16,8 @@ public class EnemyController : MonoBehaviour
     [SerializeField] SpriteRenderer hitboxVisual;
     [SerializeField] Transform player;
     [SerializeField] int attackDamage = 1;
-    [SerializeField] int maxHealth = 3;
+    [SerializeField] int maxHealth = 5;
+    [SerializeField] private GameObject[] hearts;
 
     private Rigidbody2D rb;
     private Animator animator;
@@ -40,6 +41,14 @@ public class EnemyController : MonoBehaviour
         if (attackHitbox != null)
             attackHitbox.enabled = false;
         currentHealth = maxHealth;
+    }
+    
+    void UpdateHearts()
+    {
+        for (int i = 0; i < hearts.Length; i++)
+        {
+            hearts[i].SetActive(i < currentHealth);
+        }
     }
 
     void Update()
@@ -163,6 +172,7 @@ public class EnemyController : MonoBehaviour
         if (isDead) return;
 
         currentHealth -= amount;
+        UpdateHearts();
         if (flashCoroutine != null)
             StopCoroutine(flashCoroutine);
         flashCoroutine = StartCoroutine(FlashRed());
