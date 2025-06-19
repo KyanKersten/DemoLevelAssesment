@@ -36,6 +36,7 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private GameObject hitImpactVFX;
     [SerializeField] private GameObject blockImpactVFX;
 
+    
     private Rigidbody2D rb;
     private Animator animator;
     private SpriteRenderer spriteRenderer;

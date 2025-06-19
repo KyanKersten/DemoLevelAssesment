@@ -30,6 +30,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AudioSource audioSource; // Reference to the AudioSource
     [SerializeField] private AudioClip attackSound;
     [SerializeField] private AudioClip hitBlockSound;
+    [SerializeField] private AudioClip blockSound; // Sound for starting block
     
     private Rigidbody2D rb;
     private Animator animator;
@@ -134,6 +135,11 @@ public class PlayerController : MonoBehaviour
                 blockHitbox.enabled = true;
             if (blockHitboxVisual != null)
                 blockHitboxVisual.enabled = true;
+            
+            if (audioSource != null && blockSound != null)
+            {
+                audioSource.PlayOneShot(blockSound);
+            }
         }
 
         if (Input.GetMouseButtonUp(1))
