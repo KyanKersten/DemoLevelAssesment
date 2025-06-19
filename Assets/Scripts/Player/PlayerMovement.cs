@@ -27,6 +27,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject blockImpactVFX; // VFX for blocking attack
     public ShakeData shakeData; // Shake data for camera shake effect
     
+    [SerializeField] private AudioSource audioSource; // Reference to the AudioSource
+    [SerializeField] private AudioClip attackSound;
+    [SerializeField] private AudioClip hitBlockSound;
+    
     private Rigidbody2D rb;
     private Animator animator;
     private SpriteRenderer spriteRenderer;
@@ -113,6 +117,11 @@ public class PlayerController : MonoBehaviour
 
             if (attackHitbox != null)
                 StartCoroutine(EnableHitboxTemporarily());
+            
+            if (audioSource != null && attackSound != null)
+            {
+                audioSource.PlayOneShot(attackSound);
+            }
         }
 
         if (Input.GetMouseButtonDown(1) && !rolling && currentBlockHits > 0)
@@ -244,6 +253,11 @@ public class PlayerController : MonoBehaviour
             currentBlockHits--;
             Debug.Log("Attack blocked! Remaining blocks: " + currentBlockHits);
 
+            if (audioSource != null && hitBlockSound != null)
+            {
+                audioSource.PlayOneShot(hitBlockSound);
+            }
+            
             if (blockImpactVFX != null)
             {
                 Instantiate(blockImpactVFX, transform.position + new Vector3(0, 2f, 0), Quaternion.identity);
