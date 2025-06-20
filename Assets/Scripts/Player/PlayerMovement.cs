@@ -31,6 +31,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AudioClip attackSound;
     [SerializeField] private AudioClip hitBlockSound;
     [SerializeField] private AudioClip blockSound; // Sound for starting block
+    [SerializeField] private AudioClip blockBreakSound; // Sound for block break
     
     private Rigidbody2D rb;
     private Animator animator;
@@ -287,6 +288,11 @@ public class PlayerController : MonoBehaviour
                 if (blockHitboxVisual != null)
                     blockHitboxVisual.enabled = false;
 
+                   if (audioSource != null && blockBreakSound != null)
+                                {
+                                    audioSource.PlayOneShot(blockBreakSound); 
+                                }
+                                
                 StartCoroutine(Stun(1.0f));
             }
 

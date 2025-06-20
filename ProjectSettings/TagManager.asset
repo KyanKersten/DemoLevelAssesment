@@ -8,6 +8,7 @@ TagManager:
   - Ladder
   - Ground
   - Enemy
+  - FxTemporaire
   layers:
   - Default
   - TransparentFX
@@ -56,6 +57,9 @@ TagManager:
     locked: 0
   - name: 5
     uniqueID: 507348167
+    locked: 0
+  - name: 6
+    uniqueID: 2955535171
     locked: 0
   - name: Default
     uniqueID: 0

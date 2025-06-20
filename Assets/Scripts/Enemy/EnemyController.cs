@@ -36,6 +36,11 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private GameObject hitImpactVFX;
     [SerializeField] private GameObject blockImpactVFX;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip blockSound;
+    [SerializeField] private AudioClip hitBlockSound;
+    [SerializeField] private AudioClip blockBreakSound;
     
     private Rigidbody2D rb;
     private Animator animator;
@@ -108,7 +113,7 @@ public class EnemyController : MonoBehaviour
                 return;
             }
 
-            if (!isBlocking && Random.value > 0.98f && distance < attackRange * 1.5f)
+            if (!isBlocking && Random.value > 0.995f && distance < attackRange * 1.5f)
                 StartBlocking();
 
             if (distance < attackRange * 1.5f && grounded && jumpTimer <= 0f && Random.value > 0.9f)
@@ -162,6 +167,9 @@ public class EnemyController : MonoBehaviour
         if (blockHitboxVisual != null)
             blockHitboxVisual.enabled = true;
 
+        if (audioSource != null && blockSound != null)
+            audioSource.PlayOneShot(blockSound);
+        
         if (blockDurationCoroutine != null)
             StopCoroutine(blockDurationCoroutine);
         blockDurationCoroutine = StartCoroutine(BlockForMinimumTime(minBlockDuration));
@@ -256,6 +264,10 @@ public class EnemyController : MonoBehaviour
             if (blockImpactVFX != null)
                 Instantiate(blockImpactVFX, transform.position + new Vector3(0, 2f, 0), Quaternion.identity);
 
+            if (audioSource != null && hitBlockSound != null)
+                audioSource.PlayOneShot(hitBlockSound);
+
+            
             if (currentBlockHits > 0)
             {
                 if (blockResetCoroutine != null)
@@ -264,6 +276,9 @@ public class EnemyController : MonoBehaviour
             }
             else
             {
+                if (audioSource != null && blockBreakSound != null)
+                    audioSource.PlayOneShot(blockBreakSound);
+                
                 Debug.Log("Enemy shield broken!");
                 StopBlocking();
                 StartCoroutine(StunAndRecoverBlock(1.0f));
